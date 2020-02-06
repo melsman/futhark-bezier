@@ -37,7 +37,7 @@ module lys: lys with text_content = text_content = {
 		     let (x4,y4) = (x1+dx4,y1+dy4)
 		     let (_rng,c) = rand_i32.rand (0,256*256*256) rng
 		     in {p0=(x1,y1),p1=(x2,y2),p2=(x3,y3),p3=(x4,y4),z=z+1,color=c}) rngs
-             (iota(length rngs))
+             (iota(length rngs) :> [100]i32)
     in {time = 0, w, h,
 	moving = (0,0),
 	mouse = (0,0),
