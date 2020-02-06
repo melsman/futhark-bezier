@@ -1,0 +1,7 @@
+lib
+*~
+bezier
+bezier_printf.h
+bezier_wrapper.c
+*.o
+bezier_wrapper.h
