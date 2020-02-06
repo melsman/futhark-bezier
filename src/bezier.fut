@@ -19,6 +19,8 @@ module lys: lys with text_content = text_content = {
   --module rand_f32 = uniform_real_distribution f32 rng_engine
   module rand_i32 = uniform_int_distribution i32 rng_engine
 
+  let indices [n] 'a (_:[n]a) : [n]i32 = iota n
+
   let init (seed: u32) (h: i32) (w: i32): state =
     let rng = rng_engine.rng_from_seed [i32.u32 seed]
     let rngs = rng_engine.split_rng 100 rng
@@ -37,7 +39,7 @@ module lys: lys with text_content = text_content = {
 		     let (x4,y4) = (x1+dx4,y1+dy4)
 		     let (_rng,c) = rand_i32.rand (0,256*256*256) rng
 		     in {p0=(x1,y1),p1=(x2,y2),p2=(x3,y3),p3=(x4,y4),z=z+1,color=c}) rngs
-             (iota(length rngs))
+             (indices rngs)
     in {time = 0, w, h,
 	moving = (0,0),
 	mouse = (0,0),
