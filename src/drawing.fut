@@ -1,15 +1,21 @@
-import "lib/github.com/diku-dk/segmented/segmented"
-import "lib/github.com/athas/matte/colour"
-
+----------------------------------------------------------------------
+--
 -- Flattened drawing of Bezier curves (linear; e.g. lines, quadratic,
 -- and cubic) and triangles
+--
+----------------------------------------------------------------------
+
+import "lib/github.com/diku-dk/segmented/segmented"
+import "lib/github.com/athas/matte/colour"
 
 type color = argb.colour
 type point0 = (i32,i32)
 type point = {p:point0,z:i32,color:color}
 type line = {p0:point0,p1:point0,z:i32,color:color}
 
--- Write to grid
+--
+-- Functions for drawing points on a grid
+--
 let mk_grid [n] (h:i32) (w:i32) (xs:[n]i32) (ys:[n]i32)
                 (vs:[n]{z:i32,color:color}) : [h][w]i32 =
   let is = map2 (\x y -> w*y+x) xs ys
@@ -20,8 +26,19 @@ let mk_grid [n] (h:i32) (w:i32) (xs:[n]i32) (ys:[n]i32)
      |> map (.1)
      |> unflatten h w
 
+let drawpoints [n] (h:i32) (w:i32)
+                   (ps:[n]point) :[h][w]i32 =
+  let xs = map (.p.0) ps
+  let ys = map (.p.1) ps
+  let vs = map (\p -> {z=p.z,color=p.color}) ps
+  in mk_grid h w xs ys vs
+
+----------------------------------------------------------------------
+--
 -- Parallel flattened algorithm for turning triangles into
 -- lines, using expansion.
+--
+----------------------------------------------------------------------
 
 type triangle = (point0,point0,point0,i32,color)
 
@@ -63,13 +80,28 @@ let lines_of_triangles (xs:[]triangle) : []line =
   expand lines_in_triangle get_line_in_triangle
          (map normalize xs)
 
-type cbezier = {p0:point0,p1:point0,p2:point0,p3:point0,z:i32,color:color}
+----------------------------------------------------------------------
+--
+-- DEFINITIONS OF BEZIER CURVES
+--
+--  Linear (lines), quadratic, and cubic
+--
+----------------------------------------------------------------------
 
+type cbezier = {p0:point0,p1:point0,p2:point0,p3:point0,
+		z:i32,color:color}
 type fpoint0 = (f32,f32)
+
+let fpoint0_from_point0 ((x,y):point0) : fpoint0 =
+  (r32 x, r32 y)
+
+let point0_from_fpoint0 ((x,y):fpoint0) : point0 =
+  (i32.f32(f32.round x), i32.f32(f32.round y))
 
 let (*>) (s:f32) ((x,y):fpoint0) : fpoint0 = (s*x,s*y)
 
-let (<+>) ((x1,y1):fpoint0) ((x2,y2):fpoint0) : fpoint0 = (x1+x2,y1+y2)
+let (<+>) ((x1,y1):fpoint0) ((x2,y2):fpoint0) : fpoint0 =
+  (x1+x2,y1+y2)
 
 -- linear, quadratic, and cubic interpolations
 
@@ -85,46 +117,131 @@ let qb (p0:fpoint0,p1:fpoint0,p2:fpoint0) (t:f32) : fpoint0 =
 let cb (p0:fpoint0,p1:fpoint0,p2:fpoint0,p3:fpoint0) (t:f32) =
   (1-t) *> qb(p0,p1,p2)t <+> t *> qb(p1,p2,p3)t
 
-let points_cbezier {p0:point0,p1:point0,p2:point0,p3:point0,z=_:i32,color=_:color} : i32 =
-  5 * ((p1.0-p0.0) + (p1.1-p0.1) + (p2.0-p1.0) + (p2.1-p1.1) +
-       (p3.0-p2.0) + (p3.1-p2.1))
+----------------------------------------------------------------------
+--
+-- ANTIALIASING TOOLS
+--
+----------------------------------------------------------------------
 
-let fpoint0_from_point0 ((x,y):point0) : fpoint0 =
-  (r32 x, r32 y)
+-- [scale_intensity s i] scales the intensity i [0;1] according to s
+-- [0;1]. The result is an intensity [0;1].
+--
+-- Examples:
+--  scale_intensity  1 .8 = .8     scale_intensity  1 .3 =  .3
+--  scale_intensity  0 .8 =  1     scale_intensity  0 .3 =   1
+--  scale_intensity .5 .8 = .9     scale_intensity .5 .3 = .65
+--  scale_intensity  1  0 =  0
 
-let point0_from_fpoint0 ((x,y):fpoint0) : point0 =
-  (i32.f32 x, i32.f32 y)
+let scale_intensity (s:f32) (i:f32) =
+  i + (1-s)*(1-i)
 
-let get_point_on_cbezier (curve:cbezier) (i:i32) : point =
-  let p0 = fpoint0_from_point0 curve.p0
-  let p1 = fpoint0_from_point0 curve.p1
-  let p2 = fpoint0_from_point0 curve.p2
-  let p3 = fpoint0_from_point0 curve.p3
-  let t = r32 i / r32 (points_cbezier curve)
-  let p = cb (p0,p1,p2,p3) t
-  in {p=point0_from_fpoint0 p,
-      z=curve.z,color=curve.color}
+-- [colour_split s c] splits, according to s [0;1], the colour c into
+-- two colours with maintained intensity.
+let colour_split (s:f32) (c: color) : (color,color) =
+  let (r,g,b,a) = argb.to_rgba c
+  let scale = scale_intensity
+  in (argb.from_rgba (scale s r) (scale s g) (scale s b) a,
+      argb.from_rgba (scale (1-s) r) (scale (1-s) g) (scale (1-s) b) a)
 
-let points_of_cbeziers (xs:[]cbezier) : []point =
-  expand points_cbezier get_point_on_cbezier xs
+let antialias_vertical ((x,y):fpoint0) (c:color)
+  : (point0,color,point0,color) =
+  let hi = f32.ceil y                                -- hi >= y
+  let lo = f32.floor y
+  let (chi,clo) = if hi == lo then (c,c)
+		  else colour_split (1-(hi-y)) c
+  let x' = i32.f32(f32.round x)
+  in ((x',i32.f32 hi), chi,
+      (x',i32.f32 lo), clo)
+
+let swap 'a (x:a,y:a) : (a,a) = (y,x)
+
+let antialias_horizontal (p:fpoint0) (c:color)
+  : (point0,color,point0,color) =
+  let (q1,c1,q2,c2) = antialias_vertical (swap p) c
+  in (swap q1,c1,swap q2,c2)
+
+----------------------------------------------------------------------
+--
+-- LINEAR BEZIER CURVES - a.k.a. lines
+--
+--   val points_of_lbeziers             : []line -> []point
+--   val points_of_lbeziers_antialiased : []line -> []point
+--
+----------------------------------------------------------------------
 
 let points_lbezier {p0:point0,p1:point0,z=_:i32,color=_:color} : i32 =
   1 + i32.(max (abs(p1.0-p0.0)) (abs(p1.1-p0.1)))
 
-let get_point_on_lbezier (curve:line) (i:i32) : point =
+let fpoint_on_lbezier (curve:line) (i:i32) : fpoint0 =
   let p0 = fpoint0_from_point0 curve.p0
   let p1 = fpoint0_from_point0 curve.p1
-  let t = r32 i / r32 (points_lbezier curve)
-  let p = lb (p0,p1) t
-  in {p=point0_from_fpoint0 p,
-      z=curve.z,color=curve.color}
+  let t = r32 i / r32 (points_lbezier curve - 1)
+  in lb (p0,p1) t
+
+let get_point_on_lbezier (bc:line) (i:i32) : point =
+  let p = fpoint_on_lbezier bc i
+  in {p=point0_from_fpoint0 p, z=bc.z, color=bc.color}
 
 let points_of_lbeziers (xs:[]line) : []point =
   expand points_lbezier get_point_on_lbezier xs
 
-let drawpoints [n] (h:i32) (w:i32)
-                   (ps:[n]point) :[h][w]i32 =
-  let xs = map (.p.0) ps
-  let ys = map (.p.1) ps
-  let vs = map (\p -> {z=p.z,color=p.color}) ps
-  in mk_grid h w xs ys vs
+let steep (l:line) : bool =
+  i32.(abs(l.p1.1-l.p0.1)>abs(l.p1.0-l.p0.0))
+
+let get_antialiased_points_in_lbezier (bc:line) (i:i32) : [2]point =
+  let p = fpoint_on_lbezier bc i
+  let (q1,c1,q2,c2) =
+    if steep bc then antialias_horizontal p bc.color
+    else antialias_vertical p bc.color
+  in [{p=q1, z=bc.z, color=c1},
+      {p=q2, z=bc.z, color=c2}]
+
+let points_of_lbeziers_antialiased (xs:[]line) : []point =
+  expand points_lbezier get_antialiased_points_in_lbezier xs
+     |> flatten
+
+----------------------------------------------------------------------
+--
+-- CUBIC BEZIER CURVES
+--
+--    val points_of_cbeziers             : []cbezier -> []point
+--    val points_of_cbeziers_antialiased : []cbezier -> []point
+--
+----------------------------------------------------------------------
+
+let points_cbezier {p0:point0,p1:point0,p2:point0,p3:point0,z=_:i32,color=_:color} : i32 =
+  5 * ((p1.0-p0.0) + (p1.1-p0.1) + (p2.0-p1.0) + (p2.1-p1.1) +   -- bad approaximation (also, the
+       (p3.0-p2.0) + (p3.1-p2.1))                                -- parameterisation is non-linear!
+
+let fpoint_on_cbezier (bc:cbezier) (i:i32) : (fpoint0,f32) =
+  let p0 = fpoint0_from_point0 bc.p0
+  let p1 = fpoint0_from_point0 bc.p1
+  let p2 = fpoint0_from_point0 bc.p2
+  let p3 = fpoint0_from_point0 bc.p3
+  let t = r32 i / r32 (points_cbezier bc)
+  in (cb (p0,p1,p2,p3) t, t)
+
+let get_point_on_cbezier (bc:cbezier) (i:i32) : point =
+  let (p,_) = fpoint_on_cbezier bc i
+  in {p=point0_from_fpoint0 p,
+      z=bc.z,color=bc.color}
+
+let points_of_cbeziers (xs:[]cbezier) : []point =
+  expand points_cbezier get_point_on_cbezier xs
+
+let steep_cubic (_bc:cbezier) (_t:f32) : bool =
+  -- calculate B'(t):(f32,f32) and determine if the second component
+  -- is larger than the first component...
+  true
+
+let get_antialiased_points_in_cbezier (bc:cbezier) (i:i32) : [2]point =
+  let (p,t) = fpoint_on_cbezier bc i
+  let (q1,c1,q2,c2) =
+    if steep_cubic bc t then antialias_horizontal p bc.color
+    else antialias_vertical p bc.color
+  in [{p=q1, z=bc.z, color=c1},
+      {p=q2, z=bc.z, color=c2}]
+
+let points_of_cbeziers_antialiased (xs:[]cbezier) : []point =
+  expand points_cbezier get_antialiased_points_in_cbezier xs
+     |> flatten

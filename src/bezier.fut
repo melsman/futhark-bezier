@@ -80,6 +80,16 @@ module lys: lys with text_content = text_content = {
     (f32.cos (t*10.0) * 20, f32.sin t * 10) <+> (fpoint0_from_point0 p)
     |> point0_from_fpoint0
 
+  let lines : []line = [{color=argb.blue,z=1,p0=(10,15),p1=(300,105)},
+			{color=argb.red,z=1,p0=(100,15),p1=(300,105)},
+			{color=argb.green,z=1,p0=(10,45),p1=(50,345)},
+			{color=argb.yellow,z=1,p0=(100,45),p1=(30,345)}]
+
+  let lines2 : []line = [{color=argb.blue,z=1,p0=(10,10),p1=(300,100)},
+			 {color=argb.red,z=1,p0=(100,10),p1=(300,100)},
+			 {color=argb.green,z=1,p0=(10,10),p1=(50,300)},
+			 {color=argb.yellow,z=1,p0=(100,10),p1=(30,300)}]
+
   let render (s: state) =
     let curves = map (\ {p0,p1,p2,p3,z,color} ->
 			{p0=modify (s.time*2.0) p0,
@@ -87,7 +97,13 @@ module lys: lys with text_content = text_content = {
 			 p2=modify s.time p2,
 			 p3=p3,
 			 z=z,color=color}) s.cbeziers
-    in drawpoints s.h s.w (points_of_cbeziers curves)
+    let points =
+      points_of_cbeziers_antialiased curves ++
+      --points_of_cbeziers curves ++
+      points_of_lbeziers_antialiased lines ++
+      points_of_lbeziers lines2
+
+    in drawpoints s.h s.w points
 
   type text_content = text_content
 
