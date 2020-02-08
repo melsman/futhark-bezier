@@ -12,7 +12,9 @@ written in [Futhark](http://futhark-lang.org) and builds on the
 The implementation also supports antialiased drawing of linear bezier
 curves (i.e., lines) with partly support for antialiased drawing of
 cubic bezier curves; we still need to perform some calculations on the
-derivative, which should be easy to do...
+derivative, which should be easy to do; see the screen capture below.
+
+<img src="images/antialiasing.png" border="2" width="250" align="right">
 
 ## Running it
 
