@@ -3,6 +3,8 @@ import "lib/github.com/diku-dk/cpprandom/random"
 import "drawing"
 import "font"
 
+module F = OpenBaskerville
+
 type text_content = i32
 
 module lys: lys with text_content = text_content = {
@@ -110,11 +112,12 @@ module lys: lys with text_content = text_content = {
 
   let scp (s:i32) ((x,y):point0) : point0 = (x/s, y/s)
 
-  let scale_glyph (s: i32) (g:glyph) : glyph =
+  type^ obj = {lines:[]line, curves:[]cbezier}
+
+  let scale_obj (s: i32) (g:obj) : obj =
     {lines=map (\(l:line) -> l with p0=scp s l.p0 with p1=scp s l.p1) g.lines,
      curves=map (\(u:cbezier) -> u with p0=scp s u.p0 with p1=scp s u.p1
-  	         with p2=scp s u.p2 with p3=scp s u.p3) g.curves,
-     advance=g.advance}
+  	         with p2=scp s u.p2 with p3=scp s u.p3) g.curves}
 
   let transl_point ((x,y):point0) ((a,b):point0) : point0 = (a+x,b+y)
 
@@ -125,10 +128,9 @@ module lys: lys with text_content = text_content = {
     u with p0=transl_point p u.p0 with p1=transl_point p u.p1
       with p2=transl_point p u.p2 with p3=transl_point p u.p3
 
-  let transl_glyph (p:point0) (g:glyph) : glyph =
+  let transl_obj (p:point0) (g:obj) : obj =
     {lines=map (transl_line p) g.lines,
-     curves=map (transl_curve p) g.curves,
-     advance=g.advance}
+     curves=map (transl_curve p) g.curves}
 
   let ymirror_point (y:i32) ((a,b):point0) : point0 = (a,y-b)
 
@@ -139,59 +141,37 @@ module lys: lys with text_content = text_content = {
     u with p0=ymirror_point y u.p0 with p1=ymirror_point y u.p1
       with p2=ymirror_point y u.p2 with p3=ymirror_point y u.p3
 
-  let ymirror_glyph (y:i32) (g:glyph) : glyph =
+  let ymirror_obj (y:i32) (g:obj) : obj =
     {lines=map (ymirror_line y) g.lines,
-     curves=map (ymirror_curve y) g.curves,
-     advance=g.advance}
+     curves=map (ymirror_curve y) g.curves}
 
-  -- text: Futhark
-  let text_advances = [0] ++ scan (+) 0 [glyph_F.advance,glyph_u.advance,glyph_t.advance,
-					 glyph_h.advance,glyph_a.advance,glyph_r.advance]
+  let text0 = "Futhark Gotta Go Fast"
+  let textN = length text0
+  let text = (text0 :> [textN]u8)
+  let glyfinfos = map (\c -> match F.glyph c
+			     case #Some x -> x
+			     case #None -> {char=0u8,nlines=0,ncurves=0,advance=0,firstlineidx=0,firstcurveidx=0})
+                  text
+  let text_advances = ([0] ++ scan (+) 0 (map (\gi -> gi.advance) glyfinfos))[:textN]
 
-  let text_lines = glyph_F.lines ++ glyph_u.lines ++ glyph_t.lines ++
-  		   glyph_h.lines ++ glyph_a.lines ++ glyph_r.lines ++
-                   glyph_k.lines
+  let text_lines = expand (\(gi,_) -> gi.nlines)
+                          (\(gi,adv) i -> unsafe F.lines[gi.firstlineidx+i] |> transl_line (adv,0))
+                          (zip glyfinfos text_advances)
 
-  let text_lines_N = length text_lines
+  let text_curves = expand (\(gi,_) -> gi.ncurves)
+                           (\(gi,adv) i -> unsafe F.curves[gi.firstcurveidx+i] |> transl_curve (adv,0))
+                           (zip glyfinfos text_advances)
 
-  let text_lines2 = text_lines :> [text_lines_N]line
+  let text_obj : obj = {lines=text_lines,curves=text_curves}
 
-  let text_lines_n = [length glyph_F.lines, length glyph_u.lines, length glyph_t.lines,
-  		      length glyph_h.lines, length glyph_a.lines, length glyph_r.lines,
-                      length glyph_k.lines]
-
-  let text_curves = glyph_F.curves ++ glyph_u.curves ++ glyph_t.curves ++
-  		    glyph_h.curves ++ glyph_a.curves ++ glyph_r.curves ++
-                    glyph_k.curves
-
-  let text_curves_N = length text_curves
-
-  let text_curves2 = text_curves :> [text_curves_N]cbezier
-
-  let text_curves_n = [length glyph_F.curves, length glyph_u.curves, length glyph_t.curves,
-  		       length glyph_h.curves, length glyph_a.curves, length glyph_r.curves,
-                       length glyph_k.curves]
-
-  let adv_lines : [text_lines_N]i32 =
-    (map (\i -> unsafe text_advances[i]) (replicated_iota text_lines_n)) :> [text_lines_N]i32
-  let adv_curves : [text_curves_N]i32 =
-    (map (\i -> unsafe text_advances[i]) (replicated_iota text_curves_n)) :> [text_curves_N]i32
-
-  let text_lines_adv = map2 (\a -> transl_line (a,0)) adv_lines text_lines2
-  let text_curves_adv = map2 (\a -> transl_curve (a,0)) adv_curves text_curves2
-
-  let glyph_text : glyph = {lines=text_lines_adv,curves=text_curves_adv,advance=0}
-
-  let mod_glyph (s:state) (g:glyph) : glyph =
+  let mod_obj (s:state) (g:obj) : obj =
     {lines=map (\(l:line) -> l with p0=modify 0.5 (s.time*1.5) l.p0
 	                       with p1=modify 0.5 (s.time*1.5) l.p1) g.lines,
      curves=map (\(c:cbezier) ->
 		   c with p0=modify 0.5 (s.time*1.5) c.p0
 		     with p1=modify 0.3 s.time c.p1
 		     with p2=modify 0.3 s.time c.p2
-		     with p3=modify 0.5 (s.time*1.5) c.p3) g.curves,
-     advance=g.advance}
-
+		     with p3=modify 0.5 (s.time*1.5) c.p3) g.curves}
 
   let render (s: state) =
     let curves = map (\ {p0,p1,p2,p3,z,color} ->
@@ -200,16 +180,17 @@ module lys: lys with text_content = text_content = {
 			 p2=modify 1 s.time p2,
 			 p3=p3,
 			 z=z,color=color}) s.cbeziers
-    let points_of_glyph (g:glyph) =
-      let sg = ymirror_glyph 1000 g |> transl_glyph (200,200) |> scale_glyph 8 |> mod_glyph s
-      in points_of_lbeziers_antialiased sg.lines ++ points_of_cbeziers_antialiased sg.curves
+    let points_of_obj (g:obj) =
+      let obj2 = ymirror_obj 1000 g |> transl_obj (200,200) |> scale_obj 16 |> mod_obj s
+      in points_of_lbeziers_antialiased obj2.lines ++ points_of_cbeziers_antialiased obj2.curves
+
     let points =
       points_of_cbeziers_antialiased curves ++
       points_of_cbeziers_antialiased curv1 ++
       points_of_cbeziers curv2 ++
       points_of_lbeziers_antialiased lines ++
       points_of_lbeziers lines2 ++
-      points_of_glyph glyph_text ++
+      points_of_obj text_obj ++
       points_of_cbeziers curv3
 
     in drawpoints s.h s.w points
