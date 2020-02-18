@@ -20,7 +20,9 @@ let mk_grid [n] (h:i32) (w:i32) (xs:[n]i32) (ys:[n]i32)
                 (vs:[n]{z:i32,color:color}) : [h][w]i32 =
   let is = map2 (\x y -> w*y+x) xs ys
   let grid = replicate (h*w) (0,argb.white)
-  let f (z1,c1) (z2,c2) = if z1 > z2 then (z1,c1) else (z2,c2)
+  let f (z1,c1) (z2,c2) = if z1 > z2 || (z1 == z2 && c2 > c1)
+			  then (z1,c1) -- choose darker color
+			  else (z2,c2)
   let cs = map (\v -> (v.z,v.color)) vs
   in reduce_by_index grid f (0,argb.white) is cs
      |> map (.1)
@@ -32,6 +34,12 @@ let drawpoints [n] (h:i32) (w:i32)
   let ys = map (.p.1) ps
   let vs = map (\p -> {z=p.z,color=p.color}) ps
   in mk_grid h w xs ys vs
+
+let scalei2d [h][w] (s:i32) (grid: [h][w]i32) : [][]i32 =
+  tabulate_2d (s*h)(s*w) (\r c -> unsafe (grid[r/s])[c/s])
+
+let half [h][w] (grid: [h][w]i32) : [][]i32 =
+  tabulate_2d (h/2)(w/2) (\r c -> unsafe (grid[r])[c])
 
 ----------------------------------------------------------------------
 --
@@ -103,6 +111,11 @@ let (*>) (s:f32) ((x,y):fpoint0) : fpoint0 = (s*x,s*y)
 let (<+>) ((x1,y1):fpoint0) ((x2,y2):fpoint0) : fpoint0 =
   (x1+x2,y1+y2)
 
+let (<->) ((x1,y1):fpoint0) ((x2,y2):fpoint0) : fpoint0 =
+  (x1-x2,y1-y2)
+
+let zero_fpoint0 : fpoint0 = (0,0)
+
 -- linear, quadratic, and cubic interpolations
 
 -- linear bezier point from linear curve and t in [0;1]
@@ -116,6 +129,12 @@ let qb (p0:fpoint0,p1:fpoint0,p2:fpoint0) (t:f32) : fpoint0 =
 -- cubic bezier point from cubic curve and t in [0;1]
 let cb (p0:fpoint0,p1:fpoint0,p2:fpoint0,p3:fpoint0) (t:f32) =
   (1-t) *> qb(p0,p1,p2)t <+> t *> qb(p1,p2,p3)t
+
+-- the cubic bezier curve differentiated
+let cb' (p0:fpoint0,p1:fpoint0,p2:fpoint0,p3:fpoint0) (t:f32) =
+  3*(1-t)*(1-t) *> (p1 <-> p0) <+>
+  6*(1-t)*t *> (p2 <-> p1) <+>
+  3*t*t *> (p3 <-> p2)
 
 ----------------------------------------------------------------------
 --
@@ -210,15 +229,17 @@ let points_of_lbeziers_antialiased (xs:[]line) : []point =
 ----------------------------------------------------------------------
 
 let points_cbezier {p0:point0,p1:point0,p2:point0,p3:point0,z=_:i32,color=_:color} : i32 =
-  5 * ((p1.0-p0.0) + (p1.1-p0.1) + (p2.0-p1.0) + (p2.1-p1.1) +   -- bad approaximation (also, the
-       (p3.0-p2.0) + (p3.1-p2.1))                                -- parameterisation is non-linear!
+--  1 + i32.(max (abs(p3.0-p0.0)) (abs(p3.1-p0.1)))
+  2 * i32.(abs(p1.0-p0.0) + abs(p1.1-p0.1) +
+	   abs(p2.0-p1.0) + abs(p2.1-p1.1) +   -- bad approaximation (also, the
+	   abs(p3.0-p2.0) + abs(p3.1-p2.1))    -- parameterisation is non-linear!
 
 let fpoint_on_cbezier (bc:cbezier) (i:i32) : (fpoint0,f32) =
   let p0 = fpoint0_from_point0 bc.p0
   let p1 = fpoint0_from_point0 bc.p1
   let p2 = fpoint0_from_point0 bc.p2
   let p3 = fpoint0_from_point0 bc.p3
-  let t = r32 i / r32 (points_cbezier bc)
+  let t = r32 i / r32 (points_cbezier bc - 1)
   in (cb (p0,p1,p2,p3) t, t)
 
 let get_point_on_cbezier (bc:cbezier) (i:i32) : point =
@@ -229,10 +250,13 @@ let get_point_on_cbezier (bc:cbezier) (i:i32) : point =
 let points_of_cbeziers (xs:[]cbezier) : []point =
   expand points_cbezier get_point_on_cbezier xs
 
-let steep_cubic (_bc:cbezier) (_t:f32) : bool =
-  -- calculate B'(t):(f32,f32) and determine if the second component
-  -- is larger than the first component...
-  true
+let steep_cubic (bc:cbezier) (t:f32) : bool =
+  let p0 = fpoint0_from_point0 bc.p0
+  let p1 = fpoint0_from_point0 bc.p1
+  let p2 = fpoint0_from_point0 bc.p2
+  let p3 = fpoint0_from_point0 bc.p3
+  let (x,y) = cb' (p0,p1,p2,p3) t   -- the derivative wrt t
+  in f32.(abs y > abs x)
 
 let get_antialiased_points_in_cbezier (bc:cbezier) (i:i32) : [2]point =
   let (p,t) = fpoint_on_cbezier bc i
