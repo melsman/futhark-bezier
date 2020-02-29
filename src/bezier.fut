@@ -8,7 +8,7 @@ module F = OpenBaskerville
 type text_content = i32
 
 module lys: lys with text_content = text_content = {
-  type^ state = {time: f32, h: i32, w: i32,
+  type~ state = {time: f32, h: i32, w: i32,
                  moving: (i32, i32),
                  mouse: (i32, i32),
                  paused: bool,
