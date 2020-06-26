@@ -1832,9 +1832,9 @@ let allglyphs : [256](option glyph_info) =
     let advance = font_advances[i]
     let firstlineidx = font_firstlineidx[i]
     let firstcurveidx = font_firstcurveidx[i]
-    in unsafe all with [(i32.u8 char)] = #Some {char,nlines,ncurves,advance,firstlineidx,firstcurveidx}
+    in #[unsafe] all with [(i32.u8 char)] = #Some {char,nlines,ncurves,advance,firstlineidx,firstcurveidx}
 
 let glyph (c:u8) : option glyph_info =
-  unsafe allglyphs[(i32.u8 c)]
+  #[unsafe] allglyphs[(i32.u8 c)]
 
 }

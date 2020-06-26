@@ -17,7 +17,7 @@ type line = {p0:point0,p1:point0,z:i32,color:color}
 -- Functions for drawing points on a grid
 --
 let mk_grid [n] (h:i32) (w:i32) (xs:[n]i32) (ys:[n]i32)
-                (vs:[n]{z:i32,color:color}) : [h][w]i32 =
+                (vs:[n]{z:i32,color:color}) : [h][w]argb.colour =
   let is = map2 (\x y -> w*y+x) xs ys
   let grid = replicate (h*w) (0,argb.white)
   let f (z1,c1) (z2,c2) = if z1 > z2 || (z1 == z2 && c2 > c1)
@@ -29,17 +29,17 @@ let mk_grid [n] (h:i32) (w:i32) (xs:[n]i32) (ys:[n]i32)
      |> unflatten h w
 
 let drawpoints [n] (h:i32) (w:i32)
-                   (ps:[n]point) :[h][w]i32 =
+                   (ps:[n]point) :[h][w]argb.colour =
   let xs = map (.p.0) ps
   let ys = map (.p.1) ps
   let vs = map (\p -> {z=p.z,color=p.color}) ps
   in mk_grid h w xs ys vs
 
-let scalei2d [h][w] (s:i32) (grid: [h][w]i32) : [][]i32 =
-  tabulate_2d (s*h)(s*w) (\r c -> unsafe (grid[r/s])[c/s])
+let scalei2d [h][w] (s:i32) (grid: [h][w]color) : [][]color =
+  tabulate_2d (s*h)(s*w) (\r c -> #[unsafe] (grid[r/s])[c/s])
 
-let half [h][w] (grid: [h][w]i32) : [][]i32 =
-  tabulate_2d (h/2)(w/2) (\r c -> unsafe (grid[r])[c])
+let half [h][w] (grid: [h][w]color) : [][]color =
+  tabulate_2d (h/2)(w/2) (\r c -> #[unsafe] (grid[r])[c])
 
 ----------------------------------------------------------------------
 --

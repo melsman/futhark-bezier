@@ -22,6 +22,7 @@ module lys: lys with text_content = text_content = {
   module rng_engine = minstd_rand
   --module rand_f32 = uniform_real_distribution f32 rng_engine
   module rand_i32 = uniform_int_distribution i32 rng_engine
+  module rand_u32 = uniform_int_distribution u32 rng_engine
 
   let indices [n] 'a (_:[n]a) : [n]i32 = iota n
 
@@ -41,7 +42,7 @@ module lys: lys with text_content = text_content = {
 		     let (x2,y2) = (x1+dx2,y1+dy2)
 		     let (x3,y3) = (x1+dx3,y1+dy3)
 		     let (x4,y4) = (x1+dx4,y1+dy4)
-		     let (_rng,c) = rand_i32.rand (0,256*256*256) rng
+		     let (_rng,c) = rand_u32.rand (0,256*256*256) rng
 		     in {p0=(x1,y1),p1=(x2,y2),p2=(x3,y3),p3=(x4,y4),z=z+1,color=c}) rngs
              (indices rngs)
     in {time = 0, w, h,
@@ -104,10 +105,10 @@ module lys: lys with text_content = text_content = {
 
   let curv3 : []cbezier = [{color=argb.red,z=1,p0=(60,60),p1=(20,160),p2=(200,300),p3=(60,400)}]
 
-  let halfer (r:i32) (grid: [][]i32) : [][]i32 =
+  let halfer (r:i32) (grid: [][]color) : [][]color =
     loop g = grid for _i < r-1 do half g
 
-  let doubler (r:i32) (grid: [][]i32) : [][]i32 =
+  let doubler (r:i32) (grid: [][]color) : [][]color =
     loop g = grid for _i < r-1 do scalei2d 2 g
 
   let scp (s:i32) ((x,y):point0) : point0 = (x/s, y/s)
@@ -155,11 +156,11 @@ module lys: lys with text_content = text_content = {
   let text_advances = ([0] ++ scan (+) 0 (map (\gi -> gi.advance) glyfinfos))[:textN]
 
   let text_lines = expand (\(gi,_) -> gi.nlines)
-                          (\(gi,adv) i -> unsafe F.lines[gi.firstlineidx+i] |> transl_line (adv,0))
+                          (\(gi,adv) i -> #[unsafe] F.lines[gi.firstlineidx+i] |> transl_line (adv,0))
                           (zip glyfinfos text_advances)
 
   let text_curves = expand (\(gi,_) -> gi.ncurves)
-                           (\(gi,adv) i -> unsafe F.curves[gi.firstcurveidx+i] |> transl_curve (adv,0))
+                           (\(gi,adv) i -> #[unsafe] F.curves[gi.firstcurveidx+i] |> transl_curve (adv,0))
                            (zip glyfinfos text_advances)
 
   let text_obj : obj = {lines=text_lines,curves=text_curves}
