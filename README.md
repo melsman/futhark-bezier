@@ -22,6 +22,7 @@ which demonstrates how antialiasing improves the visual appearance.
 To build and run the application, do as follows:
 
 ````
+$ cd src
 $ futhark pkg sync
 $ make
 $ ./bezier -i
