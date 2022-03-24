@@ -1,5 +1,6 @@
 import "lib/github.com/diku-dk/lys/lys"
 import "lib/github.com/diku-dk/cpprandom/random"
+import "lib/github.com/diku-dk/segmented/segmented"
 import "drawing"
 import "font"
 
@@ -8,7 +9,7 @@ module F = OpenBaskerville
 type text_content = i32
 
 module lys: lys with text_content = text_content = {
-  type~ state = {time: f32, h: i32, w: i32,
+  type~ state = {time: f32, h: i64, w: i64,
                  moving: (i32, i32),
                  mouse: (i32, i32),
                  paused: bool,
@@ -24,15 +25,15 @@ module lys: lys with text_content = text_content = {
   module rand_i32 = uniform_int_distribution i32 rng_engine
   module rand_u32 = uniform_int_distribution u32 rng_engine
 
-  let indices [n] 'a (_:[n]a) : [n]i32 = iota n
+  let indices [n] 'a (_:[n]a) : [n]i32 = map i32.i64 (iota n)
 
-  let init (seed: u32) (h: i32) (w: i32): state =
+  let init (seed: u32) (h: i64) (w: i64): state =
     let rng = rng_engine.rng_from_seed [i32.u32 seed]
     let rngs = rng_engine.split_rng 100 rng
     let ts = map2 (\rng z ->
 		     let maxsz = 200
-		     let (rng,x1) = rand_i32.rand (0,w-maxsz) rng
-		     let (rng,y1) = rand_i32.rand (0,h-maxsz) rng
+		     let (rng,x1) = rand_i32.rand (0,i32.i64 w-maxsz) rng
+		     let (rng,y1) = rand_i32.rand (0,i32.i64 h-maxsz) rng
 		     let (rng,dx2) = rand_i32.rand (5,maxsz) rng
 		     let (rng,dy2) = rand_i32.rand (5,maxsz) rng
 		     let (rng,dx3) = rand_i32.rand (5,maxsz) rng
@@ -53,7 +54,7 @@ module lys: lys with text_content = text_content = {
 	resolution = 1
 	}
 
-  let resize (h: i32) (w: i32) (s: state) =
+  let resize (h: i64) (w: i64) (s: state) =
     s with h = h with w = w
 
   let keydown (key: i32) (s: state) =
@@ -155,12 +156,12 @@ module lys: lys with text_content = text_content = {
                   text
   let text_advances = ([0] ++ scan (+) 0 (map (\gi -> gi.advance) glyfinfos))[:textN]
 
-  let text_lines = expand (\(gi,_) -> gi.nlines)
-                          (\(gi,adv) i -> #[unsafe] F.lines[gi.firstlineidx+i] |> transl_line (adv,0))
+  let text_lines = expand (\(gi,_) -> i64.i32 gi.nlines)
+                          (\(gi,adv) i -> #[unsafe] F.lines[i64.i32 gi.firstlineidx+i] |> transl_line (adv,0))
                           (zip glyfinfos text_advances)
 
-  let text_curves = expand (\(gi,_) -> gi.ncurves)
-                           (\(gi,adv) i -> #[unsafe] F.curves[gi.firstcurveidx+i] |> transl_curve (adv,0))
+  let text_curves = expand (\(gi,_) -> i64.i32 gi.ncurves)
+                           (\(gi,adv) i -> #[unsafe] F.curves[i64.i32 gi.firstcurveidx+i] |> transl_curve (adv,0))
                            (zip glyfinfos text_advances)
 
   let text_obj : obj = {lines=text_lines,curves=text_curves}

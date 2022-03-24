@@ -13,13 +13,13 @@ module type font = {
   type glyph_info = {char:u8, nlines:i32, ncurves:i32, advance:i32,
 		     firstlineidx:i32, firstcurveidx:i32}
 
-  val C : i32
+  val C : i64
   val curves : [C]cbezier               -- all curves in the font
 
-  val L : i32
+  val L : i64
   val lines  : [L]line                  -- all lines in the font
 
-  val N : i32
+  val N : i64
   val glyphs : [N]u8                    -- array of available glyphs
 
   val glyph : u8 -> option glyph_info
@@ -38,7 +38,9 @@ let curve (p0:point0) (p1:point0) (p2:point0) (p3:point0) : cbezier =
 type glyph_info = {char:u8, nlines:i32, ncurves:i32, advance:i32,
 		   firstlineidx:i32, firstcurveidx:i32}
 
-let glyph_A : glyph = 
+let len 'a [n] (_:[n]a) : i32 = i32.i64 n
+
+let glyph_A : glyph =
   {lines=[
       ln (715,0) (715,13),
       ln (715,13) (703,13),
@@ -71,7 +73,7 @@ let glyph_A : glyph =
    advance=720,
    char=65u8
   }
-let glyph_B : glyph = 
+let glyph_B : glyph =
   {lines=[
       ln (253,133) (253,352),
       ln (253,352) (331,352),
@@ -103,7 +105,7 @@ let glyph_B : glyph =
    advance=667,
    char=66u8
   }
-let glyph_C : glyph = 
+let glyph_C : glyph =
   {lines=[
       ln (634,675) (623,675),
       ln (651,193) (638,193),
@@ -124,7 +126,7 @@ let glyph_C : glyph =
    advance=668,
    char=67u8
   }
-let glyph_D : glyph = 
+let glyph_D : glyph =
   {lines=[
       ln (253,133) (253,657),
       ln (253,657) (336,657),
@@ -148,7 +150,7 @@ let glyph_D : glyph =
    advance=784,
    char=68u8
   }
-let glyph_E : glyph = 
+let glyph_E : glyph =
   {lines=[
       ln (46,13) (35,13),
       ln (35,13) (35,0),
@@ -184,7 +186,7 @@ let glyph_E : glyph =
    advance=660,
    char=69u8
   }
-let glyph_F : glyph = 
+let glyph_F : glyph =
   {lines=[
       ln (253,352) (308,352),
       ln (421,234) (421,223),
@@ -219,7 +221,7 @@ let glyph_F : glyph =
    advance=602,
    char=70u8
   }
-let glyph_G : glyph = 
+let glyph_G : glyph =
   {lines=[
       ln (621,60) (658,53),
       ln (658,53) (658,167),
@@ -248,7 +250,7 @@ let glyph_G : glyph =
    advance=784,
    char=71u8
   }
-let glyph_H : glyph = 
+let glyph_H : glyph =
   {lines=[
       ln (620,358) (253,358),
       ln (253,358) (253,549),
@@ -292,7 +294,7 @@ let glyph_H : glyph =
    advance=873,
    char=72u8
   }
-let glyph_I : glyph = 
+let glyph_I : glyph =
   {lines=[
       ln (42,676) (42,663),
       ln (42,663) (54,663),
@@ -316,7 +318,7 @@ let glyph_I : glyph =
    advance=404,
    char=73u8
   }
-let glyph_J : glyph = 
+let glyph_J : glyph =
   {lines=[
       ln (319,-19) (319,549),
       ln (417,663) (429,663),
@@ -339,7 +341,7 @@ let glyph_J : glyph =
    advance=464,
    char=74u8
   }
-let glyph_K : glyph = 
+let glyph_K : glyph =
   {lines=[
       ln (42,676) (42,663),
       ln (42,663) (54,663),
@@ -385,7 +387,7 @@ let glyph_K : glyph =
    advance=747,
    char=75u8
   }
-let glyph_L : glyph = 
+let glyph_L : glyph =
   {lines=[
       ln (46,13) (35,13),
       ln (35,13) (35,0),
@@ -410,7 +412,7 @@ let glyph_L : glyph =
    advance=648,
    char=76u8
   }
-let glyph_M : glyph = 
+let glyph_M : glyph =
   {lines=[
       ln (469,137) (243,676),
       ln (243,676) (37,676),
@@ -451,7 +453,7 @@ let glyph_M : glyph =
    advance=944,
    char=77u8
   }
-let glyph_N : glyph = 
+let glyph_N : glyph =
   {lines=[
       ln (217,676) (33,676),
       ln (33,676) (33,663),
@@ -484,7 +486,7 @@ let glyph_N : glyph =
    advance=785,
    char=78u8
   }
-let glyph_O : glyph = 
+let glyph_O : glyph =
   {lines=[],
    curves=[
       curve (43,338) (43,147) (204,-15) (401,-15),
@@ -499,7 +501,7 @@ let glyph_O : glyph =
    advance=802,
    char=79u8
   }
-let glyph_P : glyph = 
+let glyph_P : glyph =
   {lines=[
       ln (398,676) (43,676),
       ln (43,676) (43,663),
@@ -527,7 +529,7 @@ let glyph_P : glyph =
    advance=624,
    char=80u8
   }
-let glyph_Q : glyph = 
+let glyph_Q : glyph =
   {lines=[
       ln (831,64) (822,64)
     ],
@@ -553,7 +555,7 @@ let glyph_Q : glyph =
    advance=817,
    char=81u8
   }
-let glyph_R : glyph = 
+let glyph_R : glyph =
   {lines=[
       ln (253,342) (253,663),
       ln (486,163) (575,0),
@@ -586,7 +588,7 @@ let glyph_R : glyph =
    advance=750,
    char=82u8
   }
-let glyph_S : glyph = 
+let glyph_S : glyph =
   {lines=[
       ln (56,198) (45,198),
       ln (424,489) (435,489)
@@ -612,7 +614,7 @@ let glyph_S : glyph =
    advance=510,
    char=83u8
   }
-let glyph_T : glyph = 
+let glyph_T : glyph =
   {lines=[
       ln (683,676) (19,676),
       ln (19,676) (5,500),
@@ -638,7 +640,7 @@ let glyph_T : glyph =
    advance=702,
    char=84u8
   }
-let glyph_U : glyph = 
+let glyph_U : glyph =
   {lines=[
       ln (245,203) (245,549),
       ln (343,663) (355,663),
@@ -668,7 +670,7 @@ let glyph_U : glyph =
    advance=794,
    char=85u8
   }
-let glyph_V : glyph = 
+let glyph_V : glyph =
   {lines=[
       ln (-5,676) (-5,663),
       ln (-5,663) (7,663),
@@ -697,7 +699,7 @@ let glyph_V : glyph =
    advance=686,
    char=86u8
   }
-let glyph_X : glyph = 
+let glyph_X : glyph =
   {lines=[
       ln (-2,13) (-10,13),
       ln (-10,13) (-10,0),
@@ -745,7 +747,7 @@ let glyph_X : glyph =
    advance=701,
    char=88u8
   }
-let glyph_Y : glyph = 
+let glyph_Y : glyph =
   {lines=[
       ln (669,663) (677,663),
       ln (677,663) (677,676),
@@ -786,7 +788,7 @@ let glyph_Y : glyph =
    advance=650,
    char=89u8
   }
-let glyph_Z : glyph = 
+let glyph_Z : glyph =
   {lines=[
       ln (45,7) (45,0),
       ln (45,0) (644,0),
@@ -808,7 +810,7 @@ let glyph_Z : glyph =
    advance=704,
    char=90u8
   }
-let glyph_a : glyph = 
+let glyph_a : glyph =
   {lines=[
       ln (456,38) (448,42),
       ln (359,101) (359,314),
@@ -836,7 +838,7 @@ let glyph_a : glyph =
    advance=447,
    char=97u8
   }
-let glyph_b : glyph = 
+let glyph_b : glyph =
   {lines=[
       ln (154,392) (154,691),
       ln (154,691) (145,691),
@@ -860,7 +862,7 @@ let glyph_b : glyph =
    advance=519,
    char=98u8
   }
-let glyph_c : glyph = 
+let glyph_c : glyph =
   {lines=[
       ln (412,100) (401,100)
     ],
@@ -879,7 +881,7 @@ let glyph_c : glyph =
    advance=417,
    char=99u8
   }
-let glyph_d : glyph = 
+let glyph_d : glyph =
   {lines=[
       ln (372,42) (378,-15),
       ln (378,-15) (386,-15),
@@ -906,7 +908,7 @@ let glyph_d : glyph =
    advance=535,
    char=100u8
   }
-let glyph_e : glyph = 
+let glyph_e : glyph =
   {lines=[
       ln (422,100) (411,100),
       ln (113,284) (416,284),
@@ -926,7 +928,7 @@ let glyph_e : glyph =
    advance=441,
    char=101u8
   }
-let glyph_f : glyph = 
+let glyph_f : glyph =
   {lines=[
       ln (30,401) (109,401),
       ln (109,401) (109,133),
@@ -955,7 +957,7 @@ let glyph_f : glyph =
    advance=284,
    char=102u8
   }
-let glyph_g : glyph = 
+let glyph_g : glyph =
   {lines=[
       ln (156,7) (229,7),
       ln (265,70) (173,70)
@@ -996,7 +998,7 @@ let glyph_g : glyph =
    advance=431,
    char=103u8
   }
-let glyph_h : glyph = 
+let glyph_h : glyph =
   {lines=[
       ln (36,13) (36,0),
       ln (36,0) (236,0),
@@ -1028,7 +1030,7 @@ let glyph_h : glyph =
    advance=551,
    char=104u8
   }
-let glyph_i : glyph = 
+let glyph_i : glyph =
   {lines=[
       ln (43,13) (43,0),
       ln (43,0) (240,0),
@@ -1051,7 +1053,7 @@ let glyph_i : glyph =
    advance=275,
    char=105u8
   }
-let glyph_j : glyph = 
+let glyph_j : glyph =
   {lines=[
       ln (170,2) (170,437),
       ln (170,437) (160,437),
@@ -1074,7 +1076,7 @@ let glyph_j : glyph =
    advance=246,
    char=106u8
   }
-let glyph_k : glyph = 
+let glyph_k : glyph =
   {lines=[
       ln (27,13) (27,0),
       ln (27,0) (227,0),
@@ -1115,7 +1117,7 @@ let glyph_k : glyph =
    advance=477,
    char=107u8
   }
-let glyph_l : glyph = 
+let glyph_l : glyph =
   {lines=[
       ln (26,13) (26,0),
       ln (26,0) (226,0),
@@ -1134,7 +1136,7 @@ let glyph_l : glyph =
    advance=257,
    char=108u8
   }
-let glyph_m : glyph = 
+let glyph_m : glyph =
   {lines=[
       ln (40,13) (40,0),
       ln (40,0) (240,0),
@@ -1178,7 +1180,7 @@ let glyph_m : glyph =
    advance=839,
    char=109u8
   }
-let glyph_n : glyph = 
+let glyph_n : glyph =
   {lines=[
       ln (40,13) (40,0),
       ln (40,0) (240,0),
@@ -1210,7 +1212,7 @@ let glyph_n : glyph =
    advance=555,
    char=110u8
   }
-let glyph_o : glyph = 
+let glyph_o : glyph =
   {lines=[],
    curves=[
       curve (35,210) (35,89) (137,-14) (262,-14),
@@ -1225,7 +1227,7 @@ let glyph_o : glyph =
    advance=524,
    char=111u8
   }
-let glyph_p : glyph = 
+let glyph_p : glyph =
   {lines=[
       ln (163,437) (153,437),
       ln (25,418) (25,408),
@@ -1252,7 +1254,7 @@ let glyph_p : glyph =
    advance=549,
    char=112u8
   }
-let glyph_q : glyph = 
+let glyph_q : glyph =
   {lines=[
       ln (299,-191) (299,-204),
       ln (299,-204) (508,-204),
@@ -1276,7 +1278,7 @@ let glyph_q : glyph =
    advance=520,
    char=113u8
   }
-let glyph_r : glyph = 
+let glyph_r : glyph =
   {lines=[
       ln (154,434) (147,437),
       ln (20,418) (20,408),
@@ -1302,7 +1304,7 @@ let glyph_r : glyph =
    advance=354,
    char=114u8
   }
-let glyph_s : glyph = 
+let glyph_s : glyph =
   {lines=[
       ln (54,132) (47,132),
       ln (278,307) (285,307)
@@ -1328,7 +1330,7 @@ let glyph_s : glyph =
    advance=371,
    char=115u8
   }
-let glyph_t : glyph = 
+let glyph_t : glyph =
   {lines=[
       ln (307,42) (299,47),
       ln (168,134) (168,405),
@@ -1351,7 +1353,7 @@ let glyph_t : glyph =
    advance=297,
    char=116u8
   }
-let glyph_u : glyph = 
+let glyph_u : glyph =
   {lines=[
       ln (165,421) (28,421),
       ln (28,421) (28,408),
@@ -1379,7 +1381,7 @@ let glyph_u : glyph =
    advance=552,
    char=117u8
   }
-let glyph_v : glyph = 
+let glyph_v : glyph =
   {lines=[
       ln (-10,421) (-10,413),
       ln (-10,413) (-2,413),
@@ -1408,7 +1410,7 @@ let glyph_v : glyph =
    advance=448,
    char=118u8
   }
-let glyph_w : glyph = 
+let glyph_w : glyph =
   {lines=[
       ln (369,426) (356,426),
       ln (356,426) (253,112),
@@ -1443,7 +1445,7 @@ let glyph_w : glyph =
    advance=658,
    char=119u8
   }
-let glyph_x : glyph = 
+let glyph_x : glyph =
   {lines=[
       ln (156,128) (201,192),
       ln (201,192) (264,105),
@@ -1491,7 +1493,7 @@ let glyph_x : glyph =
    advance=448,
    char=120u8
   }
-let glyph_y : glyph = 
+let glyph_y : glyph =
   {lines=[
       ln (267,74) (182,275),
       ln (211,413) (218,413),
@@ -1525,7 +1527,7 @@ let glyph_y : glyph =
    advance=467,
    char=121u8
   }
-let glyph_z : glyph = 
+let glyph_z : glyph =
   {lines=[
       ln (123,12) (407,411),
       ln (407,411) (407,421),
@@ -1547,13 +1549,13 @@ let glyph_z : glyph =
    advance=468,
    char=122u8
   }
-let glyph_space : glyph = 
+let glyph_space : glyph =
   {lines=[],
    curves=[],
    advance=274,
    char=32u8
   }
-let glyph_one : glyph = 
+let glyph_one : glyph =
   {lines=[
       ln (197,676) (182,676),
       ln (21,617) (21,609),
@@ -1573,7 +1575,7 @@ let glyph_one : glyph =
    advance=317,
    char=49u8
   }
-let glyph_two : glyph = 
+let glyph_two : glyph =
   {lines=[
       ln (30,0) (420,0),
       ln (420,0) (461,174),
@@ -1598,7 +1600,7 @@ let glyph_two : glyph =
    advance=501,
    char=50u8
   }
-let glyph_three : glyph = 
+let glyph_three : glyph =
   {lines=[],
    curves=[
       curve (137,588) (137,616) (155,674) (235,674),
@@ -1627,7 +1629,7 @@ let glyph_three : glyph =
    advance=493,
    char=51u8
   }
-let glyph_four : glyph = 
+let glyph_four : glyph =
   {lines=[
       ln (176,13) (176,0),
       ln (176,0) (423,0),
@@ -1659,7 +1661,7 @@ let glyph_four : glyph =
    advance=467,
    char=52u8
   }
-let glyph_five : glyph = 
+let glyph_five : glyph =
   {lines=[
       ln (118,383) (171,618),
       ln (173,688) (84,315),
@@ -1685,7 +1687,7 @@ let glyph_five : glyph =
    advance=438,
    char=53u8
   }
-let glyph_six : glyph = 
+let glyph_six : glyph =
   {lines=[],
    curves=[
       curve (32,287) (32,101) (111,-14) (242,-14),
@@ -1705,7 +1707,7 @@ let glyph_six : glyph =
    advance=486,
    char=54u8
   }
-let glyph_seven : glyph = 
+let glyph_seven : glyph =
   {lines=[
       ln (69,694) (62,694),
       ln (62,694) (20,492),
@@ -1726,7 +1728,7 @@ let glyph_seven : glyph =
    advance=421,
    char=55u8
   }
-let glyph_eight : glyph = 
+let glyph_eight : glyph =
   {lines=[],
    curves=[
       curve (299,375) (342,395) (424,441) (424,541),
@@ -1749,7 +1751,7 @@ let glyph_eight : glyph =
    advance=498,
    char=56u8
   }
-let glyph_nine : glyph = 
+let glyph_nine : glyph =
   {lines=[],
    curves=[
       curve (461,388) (461,574) (382,691) (251,691),
@@ -1769,7 +1771,7 @@ let glyph_nine : glyph =
    advance=498,
    char=57u8
   }
-let glyph_zero : glyph = 
+let glyph_zero : glyph =
   {lines=[],
    curves=[
       curve (252,689) (128,689) (32,478) (32,329),
@@ -1787,25 +1789,25 @@ let glyph_zero : glyph =
 
 let curves0 : []cbezier = glyph_A.curves ++ glyph_B.curves ++ glyph_C.curves ++ glyph_D.curves ++ glyph_E.curves ++ glyph_F.curves ++ glyph_G.curves ++ glyph_H.curves ++ glyph_I.curves ++ glyph_J.curves ++ glyph_K.curves ++ glyph_L.curves ++ glyph_M.curves ++ glyph_N.curves ++ glyph_O.curves ++ glyph_P.curves ++ glyph_Q.curves ++ glyph_R.curves ++ glyph_S.curves ++ glyph_T.curves ++ glyph_U.curves ++ glyph_V.curves ++ glyph_X.curves ++ glyph_Y.curves ++ glyph_Z.curves ++ glyph_a.curves ++ glyph_b.curves ++ glyph_c.curves ++ glyph_d.curves ++ glyph_e.curves ++ glyph_f.curves ++ glyph_g.curves ++ glyph_h.curves ++ glyph_i.curves ++ glyph_j.curves ++ glyph_k.curves ++ glyph_l.curves ++ glyph_m.curves ++ glyph_n.curves ++ glyph_o.curves ++ glyph_p.curves ++ glyph_q.curves ++ glyph_r.curves ++ glyph_s.curves ++ glyph_t.curves ++ glyph_u.curves ++ glyph_v.curves ++ glyph_w.curves ++ glyph_x.curves ++ glyph_y.curves ++ glyph_z.curves ++ glyph_space.curves ++ glyph_one.curves ++ glyph_two.curves ++ glyph_three.curves ++ glyph_four.curves ++ glyph_five.curves ++ glyph_six.curves ++ glyph_seven.curves ++ glyph_eight.curves ++ glyph_nine.curves ++ glyph_zero.curves ++ []
 
-let C : i32 = length curves0
+let C : i64 = length curves0
 
 let curves = (curves0 :> [C]cbezier)
 
 let lines0 : []line = glyph_A.lines ++ glyph_B.lines ++ glyph_C.lines ++ glyph_D.lines ++ glyph_E.lines ++ glyph_F.lines ++ glyph_G.lines ++ glyph_H.lines ++ glyph_I.lines ++ glyph_J.lines ++ glyph_K.lines ++ glyph_L.lines ++ glyph_M.lines ++ glyph_N.lines ++ glyph_O.lines ++ glyph_P.lines ++ glyph_Q.lines ++ glyph_R.lines ++ glyph_S.lines ++ glyph_T.lines ++ glyph_U.lines ++ glyph_V.lines ++ glyph_X.lines ++ glyph_Y.lines ++ glyph_Z.lines ++ glyph_a.lines ++ glyph_b.lines ++ glyph_c.lines ++ glyph_d.lines ++ glyph_e.lines ++ glyph_f.lines ++ glyph_g.lines ++ glyph_h.lines ++ glyph_i.lines ++ glyph_j.lines ++ glyph_k.lines ++ glyph_l.lines ++ glyph_m.lines ++ glyph_n.lines ++ glyph_o.lines ++ glyph_p.lines ++ glyph_q.lines ++ glyph_r.lines ++ glyph_s.lines ++ glyph_t.lines ++ glyph_u.lines ++ glyph_v.lines ++ glyph_w.lines ++ glyph_x.lines ++ glyph_y.lines ++ glyph_z.lines ++ glyph_space.lines ++ glyph_one.lines ++ glyph_two.lines ++ glyph_three.lines ++ glyph_four.lines ++ glyph_five.lines ++ glyph_six.lines ++ glyph_seven.lines ++ glyph_eight.lines ++ glyph_nine.lines ++ glyph_zero.lines ++ []
 
-let L : i32 = length lines0
+let L : i64 = length lines0
 
-let lines = (lines0 :> [L]line) 
+let lines = (lines0 :> [L]line)
 
 let font_advances0 : []i32 = [glyph_A.advance, glyph_B.advance, glyph_C.advance, glyph_D.advance, glyph_E.advance, glyph_F.advance, glyph_G.advance, glyph_H.advance, glyph_I.advance, glyph_J.advance, glyph_K.advance, glyph_L.advance, glyph_M.advance, glyph_N.advance, glyph_O.advance, glyph_P.advance, glyph_Q.advance, glyph_R.advance, glyph_S.advance, glyph_T.advance, glyph_U.advance, glyph_V.advance, glyph_X.advance, glyph_Y.advance, glyph_Z.advance, glyph_a.advance, glyph_b.advance, glyph_c.advance, glyph_d.advance, glyph_e.advance, glyph_f.advance, glyph_g.advance, glyph_h.advance, glyph_i.advance, glyph_j.advance, glyph_k.advance, glyph_l.advance, glyph_m.advance, glyph_n.advance, glyph_o.advance, glyph_p.advance, glyph_q.advance, glyph_r.advance, glyph_s.advance, glyph_t.advance, glyph_u.advance, glyph_v.advance, glyph_w.advance, glyph_x.advance, glyph_y.advance, glyph_z.advance, glyph_space.advance, glyph_one.advance, glyph_two.advance, glyph_three.advance, glyph_four.advance, glyph_five.advance, glyph_six.advance, glyph_seven.advance, glyph_eight.advance, glyph_nine.advance, glyph_zero.advance,0]
 
-let N : i32 = length font_advances0 - 1
+let N : i64 = length font_advances0 - 1
 
 let font_advances : [N]i32 = ([glyph_A.advance, glyph_B.advance, glyph_C.advance, glyph_D.advance, glyph_E.advance, glyph_F.advance, glyph_G.advance, glyph_H.advance, glyph_I.advance, glyph_J.advance, glyph_K.advance, glyph_L.advance, glyph_M.advance, glyph_N.advance, glyph_O.advance, glyph_P.advance, glyph_Q.advance, glyph_R.advance, glyph_S.advance, glyph_T.advance, glyph_U.advance, glyph_V.advance, glyph_X.advance, glyph_Y.advance, glyph_Z.advance, glyph_a.advance, glyph_b.advance, glyph_c.advance, glyph_d.advance, glyph_e.advance, glyph_f.advance, glyph_g.advance, glyph_h.advance, glyph_i.advance, glyph_j.advance, glyph_k.advance, glyph_l.advance, glyph_m.advance, glyph_n.advance, glyph_o.advance, glyph_p.advance, glyph_q.advance, glyph_r.advance, glyph_s.advance, glyph_t.advance, glyph_u.advance, glyph_v.advance, glyph_w.advance, glyph_x.advance, glyph_y.advance, glyph_z.advance, glyph_space.advance, glyph_one.advance, glyph_two.advance, glyph_three.advance, glyph_four.advance, glyph_five.advance, glyph_six.advance, glyph_seven.advance, glyph_eight.advance, glyph_nine.advance, glyph_zero.advance,0])[:N]
 
-let font_ncurves : [N]i32 = ([length glyph_A.curves, length glyph_B.curves, length glyph_C.curves, length glyph_D.curves, length glyph_E.curves, length glyph_F.curves, length glyph_G.curves, length glyph_H.curves, length glyph_I.curves, length glyph_J.curves, length glyph_K.curves, length glyph_L.curves, length glyph_M.curves, length glyph_N.curves, length glyph_O.curves, length glyph_P.curves, length glyph_Q.curves, length glyph_R.curves, length glyph_S.curves, length glyph_T.curves, length glyph_U.curves, length glyph_V.curves, length glyph_X.curves, length glyph_Y.curves, length glyph_Z.curves, length glyph_a.curves, length glyph_b.curves, length glyph_c.curves, length glyph_d.curves, length glyph_e.curves, length glyph_f.curves, length glyph_g.curves, length glyph_h.curves, length glyph_i.curves, length glyph_j.curves, length glyph_k.curves, length glyph_l.curves, length glyph_m.curves, length glyph_n.curves, length glyph_o.curves, length glyph_p.curves, length glyph_q.curves, length glyph_r.curves, length glyph_s.curves, length glyph_t.curves, length glyph_u.curves, length glyph_v.curves, length glyph_w.curves, length glyph_x.curves, length glyph_y.curves, length glyph_z.curves, length glyph_space.curves, length glyph_one.curves, length glyph_two.curves, length glyph_three.curves, length glyph_four.curves, length glyph_five.curves, length glyph_six.curves, length glyph_seven.curves, length glyph_eight.curves, length glyph_nine.curves, length glyph_zero.curves,0])[:N]
+let font_ncurves : [N]i32 = ([len glyph_A.curves, len glyph_B.curves, len glyph_C.curves, len glyph_D.curves, len glyph_E.curves, len glyph_F.curves, len glyph_G.curves, len glyph_H.curves, len glyph_I.curves, len glyph_J.curves, len glyph_K.curves, len glyph_L.curves, len glyph_M.curves, len glyph_N.curves, len glyph_O.curves, len glyph_P.curves, len glyph_Q.curves, len glyph_R.curves, len glyph_S.curves, len glyph_T.curves, len glyph_U.curves, len glyph_V.curves, len glyph_X.curves, len glyph_Y.curves, len glyph_Z.curves, len glyph_a.curves, len glyph_b.curves, len glyph_c.curves, len glyph_d.curves, len glyph_e.curves, len glyph_f.curves, len glyph_g.curves, len glyph_h.curves, len glyph_i.curves, len glyph_j.curves, len glyph_k.curves, len glyph_l.curves, len glyph_m.curves, len glyph_n.curves, len glyph_o.curves, len glyph_p.curves, len glyph_q.curves, len glyph_r.curves, len glyph_s.curves, len glyph_t.curves, len glyph_u.curves, len glyph_v.curves, len glyph_w.curves, len glyph_x.curves, len glyph_y.curves, len glyph_z.curves, len glyph_space.curves, len glyph_one.curves, len glyph_two.curves, len glyph_three.curves, len glyph_four.curves, len glyph_five.curves, len glyph_six.curves, len glyph_seven.curves, len glyph_eight.curves, len glyph_nine.curves, len glyph_zero.curves,0])[:N]
 
-let font_nlines : [N]i32 = ([length glyph_A.lines, length glyph_B.lines, length glyph_C.lines, length glyph_D.lines, length glyph_E.lines, length glyph_F.lines, length glyph_G.lines, length glyph_H.lines, length glyph_I.lines, length glyph_J.lines, length glyph_K.lines, length glyph_L.lines, length glyph_M.lines, length glyph_N.lines, length glyph_O.lines, length glyph_P.lines, length glyph_Q.lines, length glyph_R.lines, length glyph_S.lines, length glyph_T.lines, length glyph_U.lines, length glyph_V.lines, length glyph_X.lines, length glyph_Y.lines, length glyph_Z.lines, length glyph_a.lines, length glyph_b.lines, length glyph_c.lines, length glyph_d.lines, length glyph_e.lines, length glyph_f.lines, length glyph_g.lines, length glyph_h.lines, length glyph_i.lines, length glyph_j.lines, length glyph_k.lines, length glyph_l.lines, length glyph_m.lines, length glyph_n.lines, length glyph_o.lines, length glyph_p.lines, length glyph_q.lines, length glyph_r.lines, length glyph_s.lines, length glyph_t.lines, length glyph_u.lines, length glyph_v.lines, length glyph_w.lines, length glyph_x.lines, length glyph_y.lines, length glyph_z.lines, length glyph_space.lines, length glyph_one.lines, length glyph_two.lines, length glyph_three.lines, length glyph_four.lines, length glyph_five.lines, length glyph_six.lines, length glyph_seven.lines, length glyph_eight.lines, length glyph_nine.lines, length glyph_zero.lines,0])[:N]
+let font_nlines : [N]i32 = ([len glyph_A.lines, len glyph_B.lines, len glyph_C.lines, len glyph_D.lines, len glyph_E.lines, len glyph_F.lines, len glyph_G.lines, len glyph_H.lines, len glyph_I.lines, len glyph_J.lines, len glyph_K.lines, len glyph_L.lines, len glyph_M.lines, len glyph_N.lines, len glyph_O.lines, len glyph_P.lines, len glyph_Q.lines, len glyph_R.lines, len glyph_S.lines, len glyph_T.lines, len glyph_U.lines, len glyph_V.lines, len glyph_X.lines, len glyph_Y.lines, len glyph_Z.lines, len glyph_a.lines, len glyph_b.lines, len glyph_c.lines, len glyph_d.lines, len glyph_e.lines, len glyph_f.lines, len glyph_g.lines, len glyph_h.lines, len glyph_i.lines, len glyph_j.lines, len glyph_k.lines, len glyph_l.lines, len glyph_m.lines, len glyph_n.lines, len glyph_o.lines, len glyph_p.lines, len glyph_q.lines, len glyph_r.lines, len glyph_s.lines, len glyph_t.lines, len glyph_u.lines, len glyph_v.lines, len glyph_w.lines, len glyph_x.lines, len glyph_y.lines, len glyph_z.lines, len glyph_space.lines, len glyph_one.lines, len glyph_two.lines, len glyph_three.lines, len glyph_four.lines, len glyph_five.lines, len glyph_six.lines, len glyph_seven.lines, len glyph_eight.lines, len glyph_nine.lines, len glyph_zero.lines,0])[:N]
 
 let font_chars : [N]u8 = ([glyph_A.char, glyph_B.char, glyph_C.char, glyph_D.char, glyph_E.char, glyph_F.char, glyph_G.char, glyph_H.char, glyph_I.char, glyph_J.char, glyph_K.char, glyph_L.char, glyph_M.char, glyph_N.char, glyph_O.char, glyph_P.char, glyph_Q.char, glyph_R.char, glyph_S.char, glyph_T.char, glyph_U.char, glyph_V.char, glyph_X.char, glyph_Y.char, glyph_Z.char, glyph_a.char, glyph_b.char, glyph_c.char, glyph_d.char, glyph_e.char, glyph_f.char, glyph_g.char, glyph_h.char, glyph_i.char, glyph_j.char, glyph_k.char, glyph_l.char, glyph_m.char, glyph_n.char, glyph_o.char, glyph_p.char, glyph_q.char, glyph_r.char, glyph_s.char, glyph_t.char, glyph_u.char, glyph_v.char, glyph_w.char, glyph_x.char, glyph_y.char, glyph_z.char, glyph_space.char, glyph_one.char, glyph_two.char, glyph_three.char, glyph_four.char, glyph_five.char, glyph_six.char, glyph_seven.char, glyph_eight.char, glyph_nine.char, glyph_zero.char,0])[:N]
 
