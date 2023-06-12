@@ -26,7 +26,7 @@ let mk_grid [n] (h:i64) (w:i64) (xs:[n]i32) (ys:[n]i32)
   let cs = map (\v -> (v.z,v.color)) vs
   in reduce_by_index grid f (0,argb.white) is cs
      |> map (.1)
-     |> unflatten h w
+     |> unflatten
 
 let drawpoints [n] (h:i64) (w:i64)
                    (ps:[n]point) :[h][w]argb.colour =

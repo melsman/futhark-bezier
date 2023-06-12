@@ -79,8 +79,8 @@ module lys: lys with text_content = text_content = {
     case #step td -> s with time = s.time + (if s.paused then 0 else td)
     case #keydown {key} -> keydown key s
     case #keyup {key} -> keyup key s
-    case #mouse -> s
-    case #wheel -> s
+    case #mouse _ -> s
+    case #wheel _ -> s
 
   let modify (s:f32) (t:f32) (p:point0) : point0 =
     (s*(f32.cos (t*10.0) * 20), s*(f32.sin t * 10)) <+> (fpoint0_from_point0 p)
