@@ -22,8 +22,8 @@ module lys: lys with text_content = text_content = {
   -- Pick an RNG engine and define random distributions for specific types.
   module rng_engine = minstd_rand
   --module rand_f32 = uniform_real_distribution f32 rng_engine
-  module rand_i32 = uniform_int_distribution i32 rng_engine
-  module rand_u32 = uniform_int_distribution u32 rng_engine
+  module rand_i32 = uniform_int_distribution i32 u32 rng_engine
+  module rand_u32 = uniform_int_distribution u32 u32 rng_engine
 
   let indices [n] 'a (_:[n]a) : [n]i32 = map i32.i64 (iota n)
 
