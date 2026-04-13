@@ -106,6 +106,8 @@ module lys: lys with text_content = text_content = {
 
   let curv3 : []cbezier = [{color=argb.red,z=1,p0=(60,60),p1=(20,160),p2=(200,300),p3=(60,400)}]
 
+  let curv4 : []cbezier = [{color=argb.blue,z=1,p0=(20,80),p1=(50,10),p2=(100,500),p3=(280,80)}]
+
   let halfer (r:i32) (grid: [][]color) : [][]color =
     loop g = grid for _i < r-1 do half g
 
@@ -177,7 +179,7 @@ module lys: lys with text_content = text_content = {
 
   let render (s: state) =
     let curves = map (\ {p0,p1,p2,p3,z,color} ->
-			{p0=modify 1 (s.time*2.0) p0,
+			{p0=modify 1 (s.time*1.0) p0,
 			 p1=modify 1 s.time p1,
 			 p2=modify 1 s.time p2,
 			 p3=p3,
@@ -193,7 +195,7 @@ module lys: lys with text_content = text_content = {
       points_of_lbeziers_antialiased lines ++
       points_of_lbeziers lines2 ++
       points_of_obj text_obj ++
-      points_of_cbeziers curv3
+      points_of_cbeziers curv4 ++ points_of_cbeziers curves
 
     in drawpoints s.h s.w points
        |> halfer (s.resolution)
